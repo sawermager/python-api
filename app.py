@@ -46,6 +46,9 @@ def add_book():
         # See https://www.flaskapi.org/api-guide/status-codes/ for flask API
         # response codes
         response = Response("", 201, mimetype='application/json')
+
+        # Set Header info for location (location of endpoint in request)
+        response.headers['Location'] = "/books/"+str(booktmp['isbn'])
         return response
     # Returning a string to a flask API response request gives
     # code of 200 and mimetype=html by default.
