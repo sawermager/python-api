@@ -1,13 +1,15 @@
+"""Flask API init"""
+
+"""This is server app. Client used was Postman"""
+import json
 from flask import Flask, jsonify, request, Response
 
-"""
-The name of the package is used to resolve resources from inside the
+"""The name of the package is used to resolve resources from inside the
 package or the folder the module is contained in depending on if the
 package parameter resolves to an actual python package (a folder with
-an :file:`__init__.py` file inside) or a standard module (just a ``.py`` file).
-"""
-APP = Flask(__name__)
+an :file:`__init__.py` file inside) or a standard module (just a ``.py`` file)."""
 
+APP = Flask(__name__)
 books = [
     { 
      'name': 'Green Eggs and Ham',
@@ -17,24 +19,29 @@ books = [
     { 
      'name': 'Cat in the Hat',
      'price': 6.99,
-     'isbn': 87654321
+     'isbn': 8765432
      }
 ]
 
-# Check if valid add_book response
 def validBookObject(bookObject):
+    """Check if valid add_book response"""
     return ("name" in bookObject and
             "price" in bookObject and
             "isbn" in bookObject)
 
-# Default route action is GET
 @APP.route('/books')
 def get_books():
+    """GET - Default route action"""
     return jsonify({'books': books})
 
-# POST method
+@APP.route('/books/<int:isbn>')
+def get_book_by_isbn(isbn):
+    """GET request by book dictionary entry by isbn"""
+    return jsonify([book for book in books if book["isbn"] == isbn])
+ 
 @APP.route('/books', methods=['POST'])
 def add_book():
+    """POST request"""
     req = request.get_json()
     if validBookObject(req):
         booktmp = {
@@ -43,6 +50,7 @@ def add_book():
             'isbn': req['isbn']
         }
         books.append(req)
+
         # See https://www.flaskapi.org/api-guide/status-codes/ for flask API
         # response codes
         response = Response("", 201, mimetype='application/json')
@@ -50,15 +58,62 @@ def add_book():
         # Set Header info for location (location of endpoint in request)
         response.headers['Location'] = "/books/"+str(booktmp['isbn'])
         return response
+
     # Returning a string to a flask API response request gives
     # code of 200 and mimetype=html by default.
-    return "False"
+    # Create helpful response instead of default.
+    invalid_book_object_error_msg = {
+        "error": "Invalid book object passed in POST request",
+        "helpString": "Valid data format is {'name': 'bookname', 'price': 7.9, 'isbn': 12345678}"
+    }
+    # Because invalidBookObjectErrorMsg is a dictionary, need to convert it into a json object.
+    return Response(json.dumps(invalid_book_object_error_msg), status=400, mimetype='application/json')
 
+@APP.route('/books/<int:isbn>', methods=['PUT'])
+def update_book(isbn):
+    """ PUT request to update existing entries"""
+    put_req = request.get_json()
+    for book in books:
+        if book['isbn'] == isbn:
+            for keyword, value in put_req.items():
+                if keyword != 'name' and keyword != 'price' and keyword != 'isbn':
+                    invalid_book_object_error_msg = {
+                        "error": "Invalid book object update passed in PUT request",
+                        "helpString": "Valid data format is {'name': 'bookname', 'price': 7.9, 'isbn': 12345678}"
+                    }
+                    # Because invalidBookObjectErrorMsg is a dictionary, need to convert it into a json object.
+                    # Set Header info for location (location of endpoint in request)
+                    return Response(json.dumps(invalid_book_object_error_msg), status=406, mimetype='application/json')
+                else:
+                    if keyword == "isbn":
+                        isbn = value
+                    book[keyword] = value
+    # See https://www.flaskapi.org/api-guide/status-codes/ for flask API
+    # response codes
+    response = Response("", 204, mimetype='application/json')
+    response.headers['Location'] = "/books/" + str(isbn)
+    return response
 
-# GET by book dictionary entry by isbn
-@APP.route('/books/<int:isbn>') 
-def get_book_by_isbn(isbn):
-    return jsonify([book for book in books if book["isbn"] == isbn])
+@APP.route('/books/<int:isbn>', methods=['PATCH'])
+def update_with_patch_method_book(isbn):
+    """PATCH request"""
+    return update_book(isbn)
+
+@APP.route('/books/<int:isbn>', methods=['DELETE'])
+def delete_book(isbn):
+    """DELETE request"""
+    cnt = 0
+    for book in books:
+        if book['isbn'] == isbn:
+            books.pop(cnt)
+            return Response("", status=204)
+        cnt += 1
+    invalid_book_isbn = {
+        "error": "Invalid book isbn passed in DELETE request",
+        "helpString": "Valid data format is http://<IP>:<port>/books/isbn"
+    }
+    # Because invalid_book_isbn is a dictionary, need to convert it into a json object.
+    # Set Header info for location (location of endpoint in request)
+    return Response(json.dumps(invalid_book_isbn), status=404, mimetype='application/json')
     
-
 APP.run(port=5000)
