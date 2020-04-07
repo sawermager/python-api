@@ -1,46 +1,16 @@
-"""Flask REST API"""
+"""Flask API init"""
 
 """This is server app. Client used was Postman"""
 import json
-import jwt
-import datetime
 from flask import Flask, jsonify, request, Response
 from settings import *
 from BookModel import *
-from usermodel import User
-from functools import wraps
-
-app.config['SECRET_KEY'] = 'scott'
 
 def validBookObject(bookObject):
     """Check if valid add_book response"""
     return ("name" in bookObject and
             "price" in bookObject and
             "isbn" in bookObject)
-
-def token_required(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        token = request.args.get('token')
-        try:
-            jwt.decode(token, app.config['SECRET_KEY'])
-            return fn(*args, **kwargs)
-        except:
-            return jsonify({'error': "Need valid token"}), 401
-    return wrapper
-    
-@app.route('/login', methods=['POST'])
-def get_token():
-    """Get jwt encoded token"""
-    req = request.get_json()
-    username = str(req['username'])
-    password = str(req['password'])
-    if User.username_password_match(username, password):
-        expiration_date = datetime.datetime.utcnow() + \
-            datetime.timedelta(seconds=100)
-        token = jwt.encode({'exp': expiration_date}, app.config['SECRET_KEY'], algorithm='HS256')
-        return token
-    return Response('', 401, mimetype='application/json')
 
 @app.route('/books')
 def get_books():
@@ -53,7 +23,6 @@ def get_book_by_isbn(isbn):
     return Book.get_book(isbn)
  
 @app.route('/books', methods=['POST'])
-@token_required
 def add_book():
     """POST request"""
     req = request.get_json()
@@ -84,7 +53,6 @@ def add_book():
     return Response(json.dumps(invalid_book_object_error_msg), status=400, mimetype='application/json')
 
 @app.route('/books/<int:isbn>', methods=['PUT'])
-@token_required
 def update_book(isbn):
     """ PUT request to replace/update existing entries"""
     put_req = request.get_json()
@@ -103,13 +71,11 @@ def update_book(isbn):
     return response
 
 @app.route('/books/<int:isbn>', methods=['PATCH'])
-@token_required
 def update_with_patch_method_book(isbn):
     """PATCH request"""
     return update_book(isbn)
 
 @app.route('/books/<int:isbn>', methods=['DELETE'])
-@token_required
 def delete_book(isbn):
     """DELETE request"""
     if (Book.delete_book(isbn)):
