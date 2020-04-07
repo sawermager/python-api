@@ -54,7 +54,7 @@ def add_book():
 
 @app.route('/books/<int:isbn>', methods=['PUT'])
 def update_book(isbn):
-    """ PUT request to update existing entries"""
+    """ PUT request to replace/update existing entries"""
     put_req = request.get_json()
     if not (Book.replace_book(isbn, put_req['name'], put_req['price'])):
         invalid_book_object_error_msg = {
