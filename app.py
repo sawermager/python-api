@@ -1,20 +1,42 @@
-"""Flask API init"""
+"""Flask REST API"""
 
 """This is server app. Client used was Postman"""
 import json
+import jwt
+import datetime
 from flask import Flask, jsonify, request, Response
 from settings import *
 from BookModel import *
+from usermodel import User
 
 def validBookObject(bookObject):
     """Check if valid add_book response"""
     return ("name" in bookObject and
             "price" in bookObject and
             "isbn" in bookObject)
+    
+app.config['SECRET_KEY'] = 'scott'
+@app.route('/login', methods=['POST'])
+def get_token():
+    """Get jwt encoded token"""
+    req = request.get_json()
+    username = str(req['username'])
+    password = str(req['password'])
+    if User.username_password_match(username, password):
+        expiration_date = datetime.datetime.utcnow() + \
+            datetime.timedelta(seconds=100)
+        token = jwt.encode({'exp': expiration_date}, app.config['SECRET_KEY'], algorithm='HS256')
+        return token
+    return Response('', 401, mimetype='application/json')
 
 @app.route('/books')
 def get_books():
     """GET - Default route action"""
+    token = request.args.get('token')
+    try:
+        jwt.decode(token, app.config['SECRET_KEY'])
+    except:
+        return jsonify({'error': "Need valid token"}), 401
     return jsonify({'books': Book.get_all_books()})
 
 @app.route('/books/<int:isbn>')
