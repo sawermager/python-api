@@ -1,6 +1,14 @@
-"""Flask REST API"""
+"""Flask REST API Example"""
 
-"""This is server app. Client used was Postman"""
+"""This is the server app. Client used was Postman
+TODO: Swagger
+
+NOTE: When using Postman as test client, need to set the
+HEADER labels:
+Key: content-type Value: application/json
+BODY: Set to raw data view when writing json'd format for
+request to be sent to the server.
+"""
 import json
 import jwt
 import datetime
@@ -19,6 +27,8 @@ def validBookObject(bookObject):
             "isbn" in bookObject)
 
 def token_required(fn):
+    """Note: the wraps decorator prevents odd errors
+    and behavior"""
     @wraps(fn)
     def wrapper(*args, **kwargs):
         token = request.args.get('token')
