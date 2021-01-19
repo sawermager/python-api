@@ -23,7 +23,7 @@ print (f'starting time now is = {current_time_str}')
 # a loop by 2min for each request made.
 current_time_sub = current_time - timedelta(weeks=4)
 
-# There may be a magical python lib that creates the exact valid format for the API.
+# There may be a magical python lib that creates the exact valid time format for the API.
 # I didn't see it when poking around for UTC timestamps. So, the valid format is 
 # manufactured by hand here instead.
 current_time_sub_str = current_time_sub.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
