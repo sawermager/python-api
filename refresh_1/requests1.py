@@ -1,4 +1,10 @@
 import requests
 
 
-r = requests.get('https://8555c53de3794a06e9d417bee80a4ff7.m.pipedream.net')
+#r = requests.get('http://requestbin.net/r/1jib4041')
+
+r = requests.get('https://reqres.in/api/users?page=2')
+
+print(r)
+a=print(r.json())
+print(type(a))
