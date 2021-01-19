@@ -47,7 +47,7 @@ payload_json = r'''{
             "coordinates": {
                 "type": "MAC",
                 "networkId": "test_network1",
-                "value": "DE:AD:BE:EF:BE:BE"
+                "value": "address_stub"
             },
             "createIfMissing": true
         },
