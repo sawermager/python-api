@@ -28,7 +28,7 @@ current_time_sub = current_time - timedelta(weeks=4)
 current_time_sub_str = current_time_sub.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 print(f'current_time_sub_str = {current_time_sub_str}')
 
-url = "https://platform-dev06.dragos.services/assets/api/v4/associateAddresses"
+url = "https://sitestore-test-reg4.hq.dragos.services/assets/api/v4/associateAddresses"
 headers = {
   'Content-Type': 'application/json',
   'Authorization': 'Basic YWRtaW46RHJAZ29zU3lzdDNt'
@@ -81,7 +81,7 @@ for i in range(3):
     payload['at'] = current_time_sub_str
 
     # Make request and output the status code and response
-    response = requests.request("POST", url, headers=headers, json=payload)
+    response = requests.request("POST", url, headers=headers, json=payload, verify=False)
     print(f'==> status code = {response.status_code}')
     print(response.text)
 
@@ -94,7 +94,7 @@ for i in range(3):
     payload = json.loads(payload_json)
     payload['lookups']['mac']['coordinates']['value'] = MAC2
     payload['at'] = current_time_sub_str
-    response = requests.request("POST", url, headers=headers, json=payload)
+    response = requests.request("POST", url, headers=headers, json=payload, verify=False)
     print(f'==> status code = {response.status_code}')
     print(response.text)
 
